@@ -1,16 +1,42 @@
 import time
 import random
+import cv2  # OpenCV for video processing
 
-# Placeholder for video processing (mock for now)
-def process_video_and_update_counts():
+# Placeholder for video processing and vehicle counting
+def process_video_and_update_counts(video_path):
     """
-    Simulates video analysis to update vehicle counts and waiting times.
-    Replace this function with actual image processing using OpenCV or a similar library.
+    Processes a video frame by frame to update vehicle counts for each road.
+    Uses a simple object detection model for vehicle detection.
     """
-    # Simulate counts via random increments
-    for road in vehicle_counts:
-        vehicle_counts[road] = random.randint(0, 20)  # Simulate detection
-        print("Detected vehicles on {road}: {vehicle_counts[road]}")
+    # Open the video file
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        print("Error: Cannot open video file.")
+        return
+
+    global vehicle_counts
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            print("End of video stream or error.")
+            break
+
+        # Simulate vehicle detection (replace with actual model if available)
+        # Placeholder: Random variations for counts (replace with real detection logic)
+        for road in vehicle_counts:
+            change = random.randint(-1, 3)  # Random increment or decrement
+            vehicle_counts[road] = max(0, vehicle_counts[road] + change)
+
+        # Display the video frame (optional)
+        cv2.imshow('Traffic Video', frame)
+
+        # Exit the video processing on pressing 'q'
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    # Release the video capture and close any OpenCV windows
+    cap.release()
+    cv2.destroyAllWindows()
 
 # Simulated GPIO pin states for each traffic light direction
 gpio_state = {
@@ -47,7 +73,7 @@ def clear_all_gpio():
         set_gpio(pin, False)
 
 # Traffic data
-vehicle_counts = {'North': 0, 'East': 0, 'South': 0, 'West': 0}
+vehicle_counts = {'North': 5, 'East': 3, 'South': 4, 'West': 2}  # Non-zero initial values for testing
 
 # Webster's formula for optimal signal timing
 def webster_timing(vehicle_counts):
@@ -82,10 +108,10 @@ def control_lane(road, green_time):
     time.sleep(1)
 
 # Traffic control logic
-def traffic_light_control():
+def traffic_light_control(video_path):
     while True:
         # Step 1: Analyze video to update vehicle counts
-        process_video_and_update_counts()
+        process_video_and_update_counts(video_path)
         
         # Step 2: Decide timing strategy
         strategy = "webster"  # Switch to "d3qn" or "fixed" as needed
@@ -104,5 +130,6 @@ def traffic_light_control():
         print("Cycle Complete. Restarting...\n")
 
 # Run the traffic light control
-if _name_ == "_main_":
-    traffic_light_control()
+if __name__ == "__main__":
+    video_path = "path_to_your_video.mp4"  # Replace with the actual path to your video
+    traffic_light_control(video_path)
